@@ -1,0 +1,32 @@
+[
+    {
+       "name":"iPhone",
+       "price":70000,
+       "feature":true,
+       "company":"apple"
+    },
+    {
+        "name":"iPhone10",
+        "price":75000,
+        "feature":true,
+        "company":"apple"
+     },
+     {
+        "name":"watch",
+        "price":7000,
+        "feature":true,
+        "company":"apple"
+     },
+     {
+        "name":"iPhone11",
+        "price":70000,
+        "feature":true,
+        "company":"apple"
+     },
+     {
+        "name":"iPod",
+        "price":65000,
+        "feature":true,
+        "company":"apple"
+     }
+]

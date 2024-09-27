@@ -4,6 +4,7 @@ const Products = require('../models/products');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const authCheck = require('../middleware/auth-check');
+const ProductController = require('../controller/product');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './uploads/');
@@ -21,148 +22,14 @@ const fileFilter = (req, file, cb) => {
 }
 //const upload = multer({dest:'uploads/'});
 const upload = multer({ storage: storage, fileFilter: fileFilter, limits: { fileSize: 1024 * 1024 * 5 } });
-router.get('/', (req, res, next) => {
-    Products.find()
-        .select('name price _id productImage')
-        .exec()
-        .then(doc => {
-            console.log(doc);
-            const response = {
-                count: doc.length,
-                products: doc.map(data => {
-                    return {
-                        id: data._id,
-                        name: data.name,
-                        price: data.price,
-                        productImage: data.productImage,
-                        request: {
-                            type: "Get Request",
-                            url: 'http://localhost:3000/products/' + data._id
-                        }
-                    }
-                })
-            }
-            if (doc.length > 0) {
-                res.status(200).json(response);
-            } else {
-                res.status(200).json({
-                    message: 'No entry found'
-                });
-            }
+router.get('/', ProductController.products_get_all);
 
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        })
-    // res.status(200).json({
-    //     mrssage: 'Handling get request to /products'
-    // });
-});
+router.post('/', authCheck, upload.single('productImage'), ProductController.products_create_post);
 
-router.post('/', authCheck, upload.single('productImage'), (req, res, next) => {
-    // upload.single('productImage'),
-    console.log("file=", req.file.path);
-    const product = new Products({
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
-        price: req.body.price,
-        productImage: req.file.path
-    });
-    product
-        .save()
-        .then(result => {
-            console.log(result);
-            res.status(200).json({
-                id: result._id,
-                name: result.name,
-                price: result.price,
-                productImage: req.file.path,
-                request: {
-                    type: "Get Request",
-                    url: 'http://localhost:3000/products/' + result._id
-                }
-            });
-        })
-        .catch(err => console.log(err));
-});
+router.get('/:productId', ProductController.product_get_by_productId);
 
-router.get('/:productId', (req, res, next) => {
-    const id = req.params.productId
-    Products.findById(id)
-        .select('_id name price productImage')
-        .exec()
-        .then(doc => {
-            console.log('from the db', doc);
-            if (doc) {
-                const myProd = {
-                    id: doc._id,
-                    name: doc.name,
-                    price: doc.price,
-                    productImage: doc.productImage
-                }
-                res.status(200).json({
-                    product: myProd,
-                    request: {
-                        type: "Get Request",
-                        url: 'http://localhost:3000/products/'
-                    }
-                });
-            } else {
-                res.status(404).json({
-                    message: 'no valid entry founded for provided Id'
-                });
-            }
+router.patch('/:productId', authCheck, ProductController.product_patch_productId);
 
-        })
-        .catch(err => {
-            console.log(err)
-            res.status(500).json({
-                error: err
-            })
-        });
-});
-
-router.patch('/:productId',authCheck, (req, res, next) => {
-    const id = req.params.productId;
-
-    const updateOps = {};
-
-    for (const ops of req.body) {
-        updateOps[ops.propName] = ops.value;
-    }
-    Products.update({ _id: id }, { $set: updateOps })
-        .exec()
-        .then(result => {
-            console.log(result);
-            res.status(200).json(result);
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        });
-});
-
-router.delete('/:productId', authCheck,(req, res, next) => {
-    const id = req.params.productId
-    Products.deleteOne({ _id: id })
-        .exec()
-        .then(result => {
-            console.log(result);
-            res.status(200).json({
-                message: 'Product deleted successfully'
-            });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        });
-});
+router.delete('/:productId', authCheck, ProductController.product_delete_byId);
 
 module.exports = router;

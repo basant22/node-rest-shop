@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require("express");
 const app = express();
 const morgan = require('morgan');
+const newProductRoute = require('./api/routes/newproducts');
 const productRoute = require('./api/routes/products');
 const orderRoute = require('./api/routes/order');
 const userRoute = require('./api/routes/user');
@@ -9,7 +11,8 @@ const mongoose = require('mongoose');
 //mongoose.connect('mongodb+srv://gauravupadhyaybui:'+ process.env.MONGO_ATLAS_PW+'@node-shop.kdr4l.mongodb.net/?retryWrites=true&w=majority&appName=Node-Shop',{
 useMongoClient: true
 //});
-mongoose.connect('mongodb+srv://gauravupadhyaybui:MNPpBlGre0ixGEzk@node-shop.kdr4l.mongodb.net/?retryWrites=true&w=majority&appName=Node-Shop');
+mongoose.connect(process.env.MONGODB_URL);
+//mongoose.connect('mongodb+srv://gauravupadhyaybui:MNPpBlGre0ixGEzk@node-shop.kdr4l.mongodb.net/?retryWrites=true&w=majority&appName=Node-Shop');
 //Routes which handel service here below
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -24,6 +27,7 @@ app.use((req, res, next) => {
     }
     next();
 });
+app.use('/newproducts', newProductRoute);
 app.use('/products', productRoute);
 app.use('/order', orderRoute);
 app.use('/user', userRoute);
